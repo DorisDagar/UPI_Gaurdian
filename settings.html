@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Guardian - Settings</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style3.css">
+    <link rel="stylesheet" href="style-shared.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-shield"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <div class="logo-text">
+                <h2>UPI Guardian</h2>
+                <p>Explain Before You Pay</p>
+            </div>
+        </div>
+        <div class="navigation">
+            <a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+            <a href="sendMoney.html"><i class="fa-regular fa-paper-plane"></i><span>Send Money</span></a>
+            <a href="scan-pay.html"><i class="fa-solid fa-qrcode"></i><span>Scan &amp; Pay</span></a>
+            <a href="payment-requests.html"><i class="fa-solid fa-clipboard-list"></i><span>Payment Requests</span></a>
+            <a href="transactions.html"><i class="fa-solid fa-list"></i><span>Transactions</span></a>
+            <a href="message-analyzer.html"><i class="fa-regular fa-comment-dots"></i><span>Message Analyzer</span></a>
+            <a href="insights.html"><i class="fa-solid fa-chart-simple"></i><span>Insights</span></a>
+            <a href="settings.html" class="active"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+            <a href="help.html"><i class="fa-regular fa-circle-question"></i><span>Help &amp; Support</span></a>
+        </div>
+        <div class="safety-card">
+            <div class="safety-icon"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <h3>Stay Safe, Pay Smart.</h3>
+            <p>UPI Guardian protects you</p><p>from fraud and helps you</p><p>make safe payments.</p>
+        </div>
+    </div>
+    <main class="main">
+        <header class="header">
+            <div class="welcome">
+                <h1 id="welcomeHeading">Settings</h1>
+                <p>Manage your profile, security and safety preferences.</p>
+            </div>
+            <div class="profile">
+                <div class="protection">
+                    <i class="fa-solid fa-shield"></i>
+                    <span>Protection Active</span>
+                    <span class="green-dot"></span>
+                </div>
+                <div class="notification" id="notifBell">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" hidden>0</span>
+                    <div class="notif-dropdown" id="notifDropdown" hidden>
+                        <div class="notif-dropdown-header">Recent alerts</div>
+                        <div id="notifList"><div class="notif-empty">Loading…</div></div>
+                    </div>
+                </div>
+                <div class="user" id="userMenu">
+                    <div class="user-circle" id="userInitial">?</div>
+                    <strong id="userName">Account</strong>
+                    <i class="fa-solid fa-chevron-down"></i>
+                    <div class="user-dropdown" id="userDropdown" hidden>
+                        <button type="button" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid-2" style="margin-bottom:20px;">
+            <div class="app-card">
+                <div class="section-heading"><h2>Profile</h2></div>
+                <form id="profileForm">
+                    <div class="form-grid">
+                        <div class="form-field"><label>Full Name</label><input type="text" id="settingsFullName" required></div>
+                        <div class="form-field"><label>Mobile Number</label><input type="text" id="settingsMobile" disabled></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top:16px;">Save Profile</button>
+                </form>
+            </div>
+
+            <div class="app-card">
+                <div class="section-heading"><h2>Change Password</h2></div>
+                <form id="passwordForm">
+                    <div class="form-grid">
+                        <div class="form-field"><label>New Password</label><input type="password" id="newPassword" minlength="6" required></div>
+                        <div class="form-field"><label>Confirm Password</label><input type="password" id="confirmNewPassword" minlength="6" required></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top:16px;">Update Password</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="app-card" style="margin-bottom:20px;">
+            <div class="section-heading"><h2>Notification Preferences</h2></div>
+            <div class="toggle-row">
+                <div><strong>Large transaction alerts</strong><small>Notify me when a payment is flagged as high risk.</small></div>
+                <label class="switch"><input type="checkbox" id="prefLargeAlerts" checked><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row">
+                <div><strong>New receiver alerts</strong><small>Notify me the first time I pay a new UPI ID.</small></div>
+                <label class="switch"><input type="checkbox" id="prefNewReceiver" checked><span class="slider"></span></label>
+            </div>
+            <div class="toggle-row">
+                <div><strong>Weekly summary</strong><small>A weekly digest of my transactions and safety score.</small></div>
+                <label class="switch"><input type="checkbox" id="prefWeeklySummary"><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <div class="app-card" id="trusted-contacts">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-user-shield" style="color:#2188ed;margin-right:8px;"></i>Trust Person Confirmation</h2>
+            </div>
+            <div class="toggle-row">
+                <div><strong>Require a trusted person's confirmation</strong><small>For payments above the threshold below, we'll remind you to check with someone you trust first.</small></div>
+                <label class="switch"><input type="checkbox" id="prefTrustedRequired"><span class="slider"></span></label>
+            </div>
+            <div class="form-grid" style="margin:16px 0;max-width:280px;">
+                <div class="form-field"><label>Confirmation threshold (₹)</label><input type="number" id="trustedThreshold" value="20000" min="0"></div>
+            </div>
+
+            <h3 style="font-size:14px;margin:18px 0 10px;color:#111827;">Trusted Contacts</h3>
+            <form id="contactForm" class="form-grid" style="margin-bottom:14px;">
+                <div class="form-field"><label>Name</label><input type="text" id="contactName" placeholder="e.g. Mom" required></div>
+                <div class="form-field"><label>Mobile or UPI ID</label><input type="text" id="contactHandle" placeholder="e.g. 98765xxxxx or name@upi" required></div>
+                <button type="submit" class="btn btn-primary" style="grid-column:1/-1;justify-self:start;">Add Trusted Contact</button>
+            </form>
+            <div id="contactsList"><div class="state-block" style="padding:20px;"><i class="fa-solid fa-circle-notch fa-spin"></i><p>Loading contacts…</p></div></div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/risk-engine.js"></script>
+    <script src="js/tx-utils.js"></script>
+    <script src="js/ui-kit.js"></script>
+    <script src="js/page-chrome.js"></script>
+    <script src="js/settings.js"></script>
+</body>
+</html>

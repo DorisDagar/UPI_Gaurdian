@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Guardian - Login</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style1.css">
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo-section">
+            <img src="img/logo.png" alt="UPI Guardian Logo" class="logo-img">
+            <div class="logo-text">
+                <h1>UPI <span>Guardian</span></h1>
+                <p>Explain Before You Pay</p>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <a href="login.html" class="login">Login</a>
+            <button class="get-started-btn" onclick="window.location.href='signup.html'">Get Started</button>
+        </div>
+    </header>
+    <main class="main-container">
+        <section class="left-section">
+            <h1>Secure Every Payment,<br><span>Every Time.</span></h1>
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span class="divider-icon"> <i class="fa-solid fa-shield"></i></span>
+                <div class="divider-line"></div>
+            </div>
+            <p class="description">
+                UPI Guardian protects you from fraud<br>and keeps your money safe.</p>
+            <div class="shield-area">
+                <img src="img/secure.jpeg" alt="UPI Guardian Shield" class="shield-image">
+            </div>
+        </section>
+        <section class="login-card">
+            <div class="logo-image">
+                <img src="img/logo.png" alt="UPI Guardian Logo" width="70" height="70">
+            </div>
+            <h1>Welcome Back!</h1>
+            <p class="login-text">Login to continue to your secure account</p>
+            <div class="login-options">
+                <button type="button" class="login-option active">Login</button>
+                <button type="button" class="login-option" onclick="window.location.href='signup.html'">Sign Up</button>
+            </div>
+
+            <div id="authMessage" class="auth-message" hidden></div>
+
+            <form id="loginForm" novalidate>
+                <label for="mobile">Mobile Number</label>
+                <div class="mobile-input">
+                    <span class="country-code">+91</span>
+                    <input type="tel" id="mobile" name="mobile" placeholder="Enter your mobile number" maxlength="10" inputmode="numeric" autocomplete="tel-national" required>
+                </div>
+                <label for="password">Password</label>
+                <div class="password-wrap">
+                    <input type="password" id="password" name="password" class="password-input" placeholder="Enter your password" autocomplete="current-password" required>
+                    <i class="fa-regular fa-eye eye" id="togglePassword"></i>
+                </div>
+                <div class="forgot-password">
+                    <a href="#" id="forgotPassword">Forgot Password?</a>
+                </div>
+                <button type="submit" class="login-button" id="loginButton">Login <i class="fa-solid fa-arrow-right"></i></button>
+            </form>
+
+            <div class="or">
+                <div class="or-line"></div>
+                <span>OR</span>
+                <div class="or-line"></div>
+            </div>
+            <button type="button" class="google-button" id="googleButton"><i class="fa-brands fa-google"></i>Continue with Google</button>
+            <p class="security"><i class="fa-solid fa-lock"></i>Your data is secure with us</p>
+        </section>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

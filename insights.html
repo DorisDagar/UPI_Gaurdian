@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Guardian - Insights</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style3.css">
+    <link rel="stylesheet" href="style-shared.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-shield"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <div class="logo-text">
+                <h2>UPI Guardian</h2>
+                <p>Explain Before You Pay</p>
+            </div>
+        </div>
+        <div class="navigation">
+            <a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+            <a href="sendMoney.html"><i class="fa-regular fa-paper-plane"></i><span>Send Money</span></a>
+            <a href="scan-pay.html"><i class="fa-solid fa-qrcode"></i><span>Scan &amp; Pay</span></a>
+            <a href="payment-requests.html"><i class="fa-solid fa-clipboard-list"></i><span>Payment Requests</span></a>
+            <a href="transactions.html"><i class="fa-solid fa-list"></i><span>Transactions</span></a>
+            <a href="message-analyzer.html"><i class="fa-regular fa-comment-dots"></i><span>Message Analyzer</span></a>
+            <a href="insights.html" class="active"><i class="fa-solid fa-chart-simple"></i><span>Insights</span></a>
+            <a href="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+            <a href="help.html"><i class="fa-regular fa-circle-question"></i><span>Help &amp; Support</span></a>
+        </div>
+        <div class="safety-card">
+            <div class="safety-icon"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <h3>Stay Safe, Pay Smart.</h3>
+            <p>UPI Guardian protects you</p><p>from fraud and helps you</p><p>make safe payments.</p>
+        </div>
+    </div>
+    <main class="main">
+        <header class="header">
+            <div class="welcome">
+                <h1 id="welcomeHeading">Insights</h1>
+                <p>Your spending patterns and risk trends, at a glance.</p>
+            </div>
+            <div class="profile">
+                <div class="protection">
+                    <i class="fa-solid fa-shield"></i>
+                    <span>Protection Active</span>
+                    <span class="green-dot"></span>
+                </div>
+                <div class="notification" id="notifBell">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" hidden>0</span>
+                    <div class="notif-dropdown" id="notifDropdown" hidden>
+                        <div class="notif-dropdown-header">Recent alerts</div>
+                        <div id="notifList"><div class="notif-empty">Loading…</div></div>
+                    </div>
+                </div>
+                <div class="user" id="userMenu">
+                    <div class="user-circle" id="userInitial">?</div>
+                    <strong id="userName">Account</strong>
+                    <i class="fa-solid fa-chevron-down"></i>
+                    <div class="user-dropdown" id="userDropdown" hidden>
+                        <button type="button" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="insightsEmpty" class="state-block" style="display:none;">
+            <i class="fa-solid fa-chart-simple"></i>
+            <p>No transactions yet - send or receive a payment to see insights here.</p>
+            <a class="btn btn-primary btn-sm" href="sendMoney.html">Send your first payment</a>
+        </div>
+
+        <div id="insightsContent">
+            <div class="grid-3" style="margin-bottom:20px;">
+                <div class="app-card chart-card">
+                    <div class="section-heading"><h2>Spend by Category</h2></div>
+                    <canvas id="categoryChart" height="220"></canvas>
+                </div>
+                <div class="app-card chart-card">
+                    <div class="section-heading"><h2>Risk Breakdown</h2></div>
+                    <canvas id="riskChart" height="220"></canvas>
+                </div>
+                <div class="app-card chart-card">
+                    <div class="section-heading"><h2>Monthly Spend Trend</h2></div>
+                    <canvas id="trendChart" height="220"></canvas>
+                </div>
+            </div>
+
+            <div class="app-card" id="timeline">
+                <div class="section-heading">
+                    <h2><i class="fa-solid fa-clock-rotate-left" style="color:#6737e9;margin-right:8px;"></i>Scam Timeline</h2>
+                    <span class="pill neutral">Transactions + analyzed messages, newest first</span>
+                </div>
+                <div id="timelineList">
+                    <div class="state-block" style="padding:30px 10px;">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i>
+                        <p>Building your timeline…</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/risk-engine.js"></script>
+    <script src="js/tx-utils.js"></script>
+    <script src="js/ui-kit.js"></script>
+    <script src="js/page-chrome.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="js/insights.js"></script>
+</body>
+</html>

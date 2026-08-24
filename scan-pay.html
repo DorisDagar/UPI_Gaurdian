@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Guardian - Scan &amp; Pay</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style3.css">
+    <link rel="stylesheet" href="style-shared.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-shield"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <div class="logo-text">
+                <h2>UPI Guardian</h2>
+                <p>Explain Before You Pay</p>
+            </div>
+        </div>
+        <div class="navigation">
+            <a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+            <a href="sendMoney.html"><i class="fa-regular fa-paper-plane"></i><span>Send Money</span></a>
+            <a href="scan-pay.html" class="active"><i class="fa-solid fa-qrcode"></i><span>Scan &amp; Pay</span></a>
+            <a href="payment-requests.html"><i class="fa-solid fa-clipboard-list"></i><span>Payment Requests</span></a>
+            <a href="transactions.html"><i class="fa-solid fa-list"></i><span>Transactions</span></a>
+            <a href="message-analyzer.html"><i class="fa-regular fa-comment-dots"></i><span>Message Analyzer</span></a>
+            <a href="insights.html"><i class="fa-solid fa-chart-simple"></i><span>Insights</span></a>
+            <a href="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+            <a href="help.html"><i class="fa-regular fa-circle-question"></i><span>Help &amp; Support</span></a>
+        </div>
+        <div class="safety-card">
+            <div class="safety-icon"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <h3>Stay Safe, Pay Smart.</h3>
+            <p>UPI Guardian protects you</p><p>from fraud and helps you</p><p>make safe payments.</p>
+        </div>
+    </div>
+    <main class="main">
+        <header class="header">
+            <div class="welcome">
+                <h1 id="welcomeHeading">Scan &amp; Pay</h1>
+                <p>Every QR code is decoded and checked before you pay.</p>
+            </div>
+            <div class="profile">
+                <div class="protection">
+                    <i class="fa-solid fa-shield"></i>
+                    <span>Protection Active</span>
+                    <span class="green-dot"></span>
+                </div>
+                <div class="notification" id="notifBell">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" hidden>0</span>
+                    <div class="notif-dropdown" id="notifDropdown" hidden>
+                        <div class="notif-dropdown-header">Recent alerts</div>
+                        <div id="notifList"><div class="notif-empty">Loading…</div></div>
+                    </div>
+                </div>
+                <div class="user" id="userMenu">
+                    <div class="user-circle" id="userInitial">?</div>
+                    <strong id="userName">Account</strong>
+                    <i class="fa-solid fa-chevron-down"></i>
+                    <div class="user-dropdown" id="userDropdown" hidden>
+                        <button type="button" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid-2">
+            <div class="app-card">
+                <div class="section-heading"><h2>Scan a QR Code</h2></div>
+                <div class="tabbar">
+                    <button type="button" class="active" data-tab="camera">Use Camera</button>
+                    <button type="button" data-tab="upload">Upload Image</button>
+                    <button type="button" data-tab="sample">Try Sample QR</button>
+                </div>
+
+                <div id="cameraTab">
+                    <div class="qr-stage" id="qrStage">
+                        <div class="qr-placeholder" id="qrPlaceholder">
+                            <i class="fa-solid fa-camera"></i>
+                            <p>Tap "Start Camera" to scan a UPI QR code.<br><small>Needs camera permission &amp; HTTPS.</small></p>
+                        </div>
+                        <video id="qrVideo" playsinline muted style="display:none;"></video>
+                        <div class="qr-frame" id="qrFrame" style="display:none;"></div>
+                        <div class="qr-hint" id="qrHint" style="display:none;">Point your camera at a UPI QR code</div>
+                    </div>
+                    <div style="display:flex;gap:10px;margin-top:16px;">
+                        <button type="button" class="btn btn-primary" id="startCameraBtn"><i class="fa-solid fa-video"></i> Start Camera</button>
+                        <button type="button" class="btn btn-ghost" id="stopCameraBtn" style="display:none;"><i class="fa-solid fa-stop"></i> Stop</button>
+                    </div>
+                </div>
+
+                <div id="uploadTab" style="display:none;">
+                    <div class="qr-placeholder" style="border:2px dashed #d9dce8;border-radius:14px;padding:40px 20px;">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <p>Upload a screenshot of a UPI QR code</p>
+                        <input type="file" id="qrFileInput" accept="image/*" style="margin-top:10px;">
+                    </div>
+                    <canvas id="qrCanvas" style="display:none;"></canvas>
+                </div>
+
+                <div id="sampleTab" style="display:none;">
+                    <p style="font-size:13.5px;color:#6b7280;margin-bottom:12px;">No camera handy? Try one of these sample QR payloads:</p>
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <button type="button" class="btn btn-outline" data-sample="upi://pay?pa=friend@okhdfc&pn=Rahul%20Kumar&am=500&tn=Lunch">✅ Legit "Pay" QR - friend@okhdfc, ₹500</button>
+                        <button type="button" class="btn btn-outline" data-sample="upi://pay?pa=newshop2024@okaxis&pn=New%20Mobile%20Store&am=38500&tn=Phone%20purchase">⚠️ New receiver, large amount - ₹38,500</button>
+                        <button type="button" class="btn btn-outline" data-sample="upi://collect?pa=refund-desk@fraud&pn=Refund%20Desk&am=1999&tn=Refund%20verification">🚨 Fake "Collect" QR disguised as a refund</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-card">
+                <div class="section-heading"><h2>Scan Result</h2></div>
+                <div id="scanResultArea">
+                    <div class="state-block">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <p>Scan, upload, or try a sample QR to see the risk analysis here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/risk-engine.js"></script>
+    <script src="js/tx-utils.js"></script>
+    <script src="js/ui-kit.js"></script>
+    <script src="js/page-chrome.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.js"></script>
+    <script src="js/scan-pay.js"></script>
+</body>
+</html>

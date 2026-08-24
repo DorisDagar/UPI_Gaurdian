@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>UPI Guardian - Message Analyzer</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style5.css">
+    <link rel="stylesheet" href="style-shared.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-shield"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <div class="logo-text">
+                <h2>UPI Guardian</h2>
+                <p>Explain Before You Pay</p>
+            </div>
+        </div>
+        <div class="navigation">
+            <a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+            <a href="sendMoney.html"><i class="fa-regular fa-paper-plane"></i><span>Send Money</span></a>
+            <a href="scan-pay.html"><i class="fa-solid fa-qrcode"></i><span>Scan &amp; Pay</span></a>
+            <a href="payment-requests.html"><i class="fa-solid fa-clipboard-list"></i><span>Payment Requests</span></a>
+            <a href="transactions.html"><i class="fa-solid fa-list"></i><span>Transactions</span></a>
+            <a href="message-analyzer.html" class="active"><i class="fa-regular fa-comment-dots"></i><span>Message Analyzer</span></a>
+            <a href="insights.html"><i class="fa-solid fa-chart-simple"></i><span>Insights</span></a>
+            <a href="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+            <a href="help.html"><i class="fa-regular fa-circle-question"></i><span>Help &amp; Support</span></a>
+        </div>
+        <div class="safety-card">
+            <div class="safety-icon"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <h3>Stay Safe, Pay Smart.</h3>
+            <p>UPI Guardian protects you</p><p>from fraud and helps you</p><p>make safe payments.</p>
+        </div>
+    </div>
+    <main class="main">
+        <header class="header">
+            <div class="welcome">
+                <h1 id="welcomeHeading">Message Analyzer</h1>
+                <p>Let's keep your payments safe today.</p>
+            </div>
+            <div class="profile">
+                <div class="protection">
+                    <i class="fa-solid fa-shield"></i>
+                    <span>Protection Active</span>
+                    <span class="green-dot"></span>
+                </div>
+                <div class="notification" id="notifBell">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" hidden>0</span>
+                    <div class="notif-dropdown" id="notifDropdown" hidden>
+                        <div class="notif-dropdown-header">Recent alerts</div>
+                        <div id="notifList"><div class="notif-empty">Loading…</div></div>
+                    </div>
+                </div>
+                <div class="user" id="userMenu">
+                    <div class="user-circle" id="userInitial">?</div>
+                    <strong id="userName">Account</strong>
+                    <i class="fa-solid fa-chevron-down"></i>
+                    <div class="user-dropdown" id="userDropdown" hidden>
+                        <button type="button" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <div class="content">
+            <div class="page-title">
+                <div class="heading-text">
+                    <h1>Message Analyzer</h1>
+                    <p>Analyze suspicious messages and detect scams</p>
+                </div>
+                <div class="heading-image">
+                    <img src="img/analyze.png" alt="Message Analyzer illustration">
+                </div>
+            </div>
+            <div class="analyzer-area">
+                <div class="card">
+                    <h2 class="card-title">Analyze a Message</h2>
+                    <p class="card-subtitle">Paste a message or upload a screenshot</p>
+                    <label class="label">Paste Message</label>
+                    <textarea id="messageInput" maxlength="1000" placeholder="Paste the suspicious message here..."></textarea>
+                    <p class="counter"><span id="charCount">0</span>/1000</p>
+                    <div class="or">
+                        <div></div>
+                        <span>OR</span>
+                        <div></div>
+                    </div>
+                    <label class="label">Upload Screenshot</label>
+                    <div class="upload-box" id="uploadBox">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <p id="uploadStatus">Click to upload or drag and drop</p>
+                        <span> PNG, JPG, JPEG (Max. 5MB)</span>
+                        <input type="file" id="screenshotInput" accept="image/png,image/jpeg" style="display:none;">
+                    </div>
+                    <button class="analyze-button" id="analyzeBtn" disabled><i class="fa-solid fa-shield"></i>Analyze Message</button>
+                </div>
+                <div class="card" id="resultCard">
+                    <h2 class="card-title">Analysis Result</h2>
+                    <div id="resultBody">
+                        <div class="state-block" style="padding:30px 10px;">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <p>Paste a message and click Analyze to see results here.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tips">
+                <div class="tips-title">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Stay Safe Tips</span>
+                </div>
+                <div class="tips-list">
+                    <div class="tip">
+                        <i class="fa-solid fa-lock" style="font-size:28px;color:#6737e9;width:55px;text-align:center;"></i>
+                        <div>
+                            <h4>Protect your account</h4>
+                            <p>Never share OTP or UPI PIN with anyone</p>
+                        </div>
+                    </div>
+                    <div class="tip">
+                        <i class="fa-solid fa-link-slash" style="font-size:28px;color:#2188ed;width:55px;text-align:center;"></i>
+                        <div>
+                            <h4>Check every link</h4>
+                            <p>Avoid clicking links from unknown senders.</p>
+                        </div>
+                    </div>
+                    <div class="tip">
+                        <i class="fa-solid fa-user-shield" style="font-size:28px;color:#18ad68;width:55px;text-align:center;"></i>
+                        <div>
+                            <h4>Verify the sender</h4>
+                            <p>Confirm payment requests through official channels.</p>
+                        </div>
+                    </div>
+                    <div class="tip">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size:28px;color:#e99124;width:55px;text-align:center;"></i>
+                        <div>
+                            <h4>Stay alert </h4>
+                            <p>Report suspicious messages and possible scams.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/risk-engine.js"></script>
+    <script src="js/tx-utils.js"></script>
+    <script src="js/ui-kit.js"></script>
+    <script src="js/page-chrome.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="js/message-analyzer.js"></script>
+</body>
+</html>

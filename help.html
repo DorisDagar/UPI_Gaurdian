@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Guardian - Help &amp; Support</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style3.css">
+    <link rel="stylesheet" href="style-shared.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-shield"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <div class="logo-text">
+                <h2>UPI Guardian</h2>
+                <p>Explain Before You Pay</p>
+            </div>
+        </div>
+        <div class="navigation">
+            <a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+            <a href="sendMoney.html"><i class="fa-regular fa-paper-plane"></i><span>Send Money</span></a>
+            <a href="scan-pay.html"><i class="fa-solid fa-qrcode"></i><span>Scan &amp; Pay</span></a>
+            <a href="payment-requests.html"><i class="fa-solid fa-clipboard-list"></i><span>Payment Requests</span></a>
+            <a href="transactions.html"><i class="fa-solid fa-list"></i><span>Transactions</span></a>
+            <a href="message-analyzer.html"><i class="fa-regular fa-comment-dots"></i><span>Message Analyzer</span></a>
+            <a href="insights.html"><i class="fa-solid fa-chart-simple"></i><span>Insights</span></a>
+            <a href="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+            <a href="help.html" class="active"><i class="fa-regular fa-circle-question"></i><span>Help &amp; Support</span></a>
+        </div>
+        <div class="safety-card">
+            <div class="safety-icon"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <h3>Stay Safe, Pay Smart.</h3>
+            <p>UPI Guardian protects you</p><p>from fraud and helps you</p><p>make safe payments.</p>
+        </div>
+    </div>
+    <main class="main">
+        <header class="header">
+            <div class="welcome">
+                <h1 id="welcomeHeading">Help &amp; Support</h1>
+                <p>Guides, safety tips, and what to do if something goes wrong.</p>
+            </div>
+            <div class="profile">
+                <div class="protection">
+                    <i class="fa-solid fa-shield"></i>
+                    <span>Protection Active</span>
+                    <span class="green-dot"></span>
+                </div>
+                <div class="notification" id="notifBell">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" hidden>0</span>
+                    <div class="notif-dropdown" id="notifDropdown" hidden>
+                        <div class="notif-dropdown-header">Recent alerts</div>
+                        <div id="notifList"><div class="notif-empty">Loading…</div></div>
+                    </div>
+                </div>
+                <div class="user" id="userMenu">
+                    <div class="user-circle" id="userInitial">?</div>
+                    <strong id="userName">Account</strong>
+                    <i class="fa-solid fa-chevron-down"></i>
+                    <div class="user-dropdown" id="userDropdown" hidden>
+                        <button type="button" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="app-card" id="recovery" style="margin-bottom:20px;">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-life-ring" style="color:#18ad68;margin-right:8px;"></i>Recovery Method - if you've been scammed</h2>
+            </div>
+            <p style="font-size:13.5px;color:#6b7280;margin-bottom:6px;">Follow these steps in order. Check each one off as you go - your progress is saved on this device.</p>
+            <div class="stepper" id="recoveryStepper"></div>
+        </div>
+
+        <div class="grid-2" style="align-items:start;margin-bottom:20px;">
+            <div class="app-card" id="tips">
+                <div class="section-heading"><h2>Stay Safe Tips</h2></div>
+                <div id="tipsList" style="display:flex;flex-direction:column;gap:14px;"></div>
+            </div>
+            <div class="app-card">
+                <div class="section-heading"><h2>Frequently Asked Questions</h2></div>
+                <div class="form-field" style="margin-bottom:14px;">
+                    <input type="text" id="faqSearch" placeholder="Search FAQs…">
+                </div>
+                <div id="faqList"></div>
+            </div>
+        </div>
+
+        <div class="app-card">
+            <div class="section-heading"><h2>Contact Support</h2></div>
+            <p style="font-size:13.5px;color:#6b7280;margin-bottom:14px;">Can't find what you're looking for? Reach out and we'll help directly.</p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <a class="btn btn-outline" href="mailto:support@upiguardian.app"><i class="fa-regular fa-envelope"></i> support@upiguardian.app</a>
+                <a class="btn btn-outline" href="tel:1930"><i class="fa-solid fa-phone"></i> National Cybercrime Helpline: 1930</a>
+                <a class="btn btn-outline" href="https://cybercrime.gov.in" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square"></i> cybercrime.gov.in</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/page-chrome.js"></script>
+    <script src="js/help.js"></script>
+</body>
+</html>

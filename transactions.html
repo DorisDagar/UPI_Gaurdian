@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Guardian - Transaction History</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style6.css">
+    <link rel="stylesheet" href="style-shared.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="logo-shield"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <div class="logo-text">
+                <h2>UPI Guardian</h2>
+                <p>Explain Before You Pay</p>
+            </div>
+        </div>
+        <div class="navigation">
+            <a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+            <a href="sendMoney.html"><i class="fa-regular fa-paper-plane"></i><span>Send Money</span></a>
+            <a href="scan-pay.html"><i class="fa-solid fa-qrcode"></i><span>Scan &amp; Pay</span></a>
+            <a href="payment-requests.html"><i class="fa-solid fa-clipboard-list"></i><span>Payment Requests</span></a>
+            <a href="transactions.html" class="active"><i class="fa-solid fa-list"></i><span>Transactions</span></a>
+            <a href="message-analyzer.html"><i class="fa-regular fa-comment-dots"></i><span>Message Analyzer</span></a>
+            <a href="insights.html"><i class="fa-solid fa-chart-simple"></i><span>Insights</span></a>
+            <a href="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+            <a href="help.html"><i class="fa-regular fa-circle-question"></i><span>Help &amp; Support</span></a>
+        </div>
+        <div class="safety-card">
+            <div class="safety-icon"><i class="fa-solid fa-shield"></i><span>₹</span></div>
+            <h3>Stay Safe, Pay Smart.</h3>
+            <p>UPI Guardian protects you</p><p>from fraud and helps you</p><p>make safe payments.</p>
+        </div>
+    </div>
+    <main class="main">
+        <header class="header">
+            <div class="welcome">
+                <h1>Transaction History</h1>
+                <p>All your UPI payments, reviewed for safety, in one place.</p>
+            </div>
+            <div class="profile">
+                <div class="protection">
+                    <i class="fa-solid fa-shield"></i>
+                    <span>Protection Active</span>
+                    <span class="green-dot"></span>
+                </div>
+                <div class="notification" id="notifBell">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="notif-badge" id="notifBadge" hidden>0</span>
+                    <div class="notif-dropdown" id="notifDropdown" hidden>
+                        <div class="notif-dropdown-header">Recent alerts</div>
+                        <div id="notifList"><div class="notif-empty">Loading…</div></div>
+                    </div>
+                </div>
+                <div class="user" id="userMenu">
+                    <div class="user-circle" id="userInitial">?</div>
+                    <strong id="userName">Account</strong>
+                    <i class="fa-solid fa-chevron-down"></i>
+                    <div class="user-dropdown" id="userDropdown" hidden>
+                        <button type="button" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i> Log out</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="stats">
+            <div class="stat-card purple">
+                <div class="stat-icon"><i class="fa-solid fa-list"></i></div>
+                <div>
+                    <h4>Total Transactions</h4>
+                    <div class="number" id="statTotal">0</div>
+                </div>
+            </div>
+            <div class="stat-card blue">
+                <div class="stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                <div>
+                    <h4>Total Amount</h4>
+                    <div class="number" id="statAmount">₹0</div>
+                </div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div>
+                    <h4>High Risk Alerts</h4>
+                    <div class="number" id="statHigh">0</div>
+                </div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon"><i class="fa-solid fa-shield"></i></div>
+                <div>
+                    <h4>Low Risk Share</h4>
+                    <div class="number" id="statLow">0%</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="filters-bar">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search by name or UPI ID...">
+            </div>
+            <select id="riskFilter">
+                <option value="all">All Risk Levels</option>
+                <option value="low">Low Risk</option>
+                <option value="medium">Medium Risk</option>
+                <option value="high">High Risk</option>
+            </select>
+            <select id="directionFilter">
+                <option value="all">Sent & Received</option>
+                <option value="sent">Sent</option>
+                <option value="received">Received</option>
+            </select>
+            <select id="sortFilter">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="amount_desc">Amount: High to Low</option>
+                <option value="amount_asc">Amount: Low to High</option>
+            </select>
+            <button id="refreshBtn"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+
+        <section class="history-card">
+            <div class="section-heading">
+                <h2>All Transactions</h2>
+                <span class="result-count" id="resultCount"></span>
+            </div>
+
+            <div class="state-msg" id="txLoading">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <p>Loading your transactions...</p>
+            </div>
+
+            <div class="state-msg error" id="txError" hidden>
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p id="txErrorText">Something went wrong.</p>
+            </div>
+
+            <div class="state-msg" id="txEmpty" hidden>
+                <i class="fa-solid fa-receipt"></i>
+                <p>No transactions yet. Once you send or receive money, they'll show up here.</p>
+                <button id="seedBtn">Load Sample Data</button>
+            </div>
+
+            <div class="tx-list" id="txList" hidden></div>
+            <div class="pagination" id="txPagination" hidden></div>
+        </section>
+
+        <footer>
+            <i class="fa-solid fa-shield"></i>
+            UPI Guardian works 24×7 to protect you from fraud.
+            Always review before you pay.
+            <a href="dashboard.html">Back to Dashboard<i class="fa-solid fa-arrow-right"></i></a>
+        </footer>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/risk-engine.js"></script>
+    <script src="js/tx-utils.js"></script>
+    <script src="js/ui-kit.js"></script>
+    <script src="js/page-chrome.js"></script>
+    <script src="js/transactions.js"></script>
+</body>
+</html>
