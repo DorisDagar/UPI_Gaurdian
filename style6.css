@@ -325,6 +325,9 @@ a {
     text-align: center;
     color: #66718a;
 }
+.state-msg[hidden] {
+    display: none;
+}
 .state-msg i { font-size: 30px; color: #a6afc4; }
 .state-msg p { font-size: 14px; max-width: 380px; line-height: 1.6; }
 .state-msg code {
