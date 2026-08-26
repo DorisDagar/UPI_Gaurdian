@@ -56,19 +56,6 @@
         payee: "KYC Update - SBI", amount: 1,
       });
     },
-    "fake-qr": function () {
-      const parsed = window.RiskEngine.parseUpiQr("upi://collect?pa=scanner-scam@upi&pn=Refund%20Desk&am=2500&tn=Refund");
-      const result = window.RiskEngine.assessTransactionRisk({
-        payeeName: parsed.pn || "Refund Desk", upiId: parsed.pa, amount: Number(parsed.am) || 0,
-        note: parsed.tn, history: [], isCollectRequest: parsed.isCollect,
-      });
-      showResult({
-        title: "Demo: Fake QR Code Scam",
-        intro: "A scanned QR decodes to a <code>upi://collect</code> link disguised as a refund. Scanning it would REQUEST ₹2,500 from you, not give you a refund:",
-        result,
-        payee: parsed.pn, amount: Number(parsed.am) || 0,
-      });
-    },
     "message-analyzer": function () {
       const sample = "Dear Customer, your KYC is BLOCKED. Update immediately or your account will be suspended within 24 hours. Click http://bit.ly/kyc-verify-now and share the OTP to continue. Congratulations you are also eligible for a cash prize!";
       const result = window.RiskEngine.analyzeMessage(sample);
