@@ -10,12 +10,21 @@
   let mode = "upi";
   let history = [];
   let currentUser = null;
+  // Guards against double-submission (double-click / double-tap on
+  // Continue or on the review modal's Confirm button), which used to
+  // insert two identical transaction rows for a single payment.
+  let isReviewOpen = false;
+  let isFinalizing = false;
+
+  const DUPLICATE_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+  const HOUR_MS = 60 * 60 * 1000;
 
   document.addEventListener("DOMContentLoaded", cacheAndBind);
   document.addEventListener("upi-guardian:ready", async (e) => {
     currentUser = e.detail && e.detail.user;
     history = await fetchHistory();
     renderRecentPayees();
+    renderPaymentActivity();
   });
 
   function cacheAndBind() {
@@ -35,6 +44,7 @@
     els.summaryAmount = document.getElementById("summaryAmount");
     els.summaryNote = document.getElementById("summaryNote");
     els.continueBtn = document.getElementById("continueBtn");
+    els.paymentActivityBox = document.getElementById("paymentActivityBox");
 
     document.querySelectorAll(".tab[data-mode]").forEach((tab) => {
       tab.addEventListener("click", () => setMode(tab.dataset.mode));
@@ -128,6 +138,11 @@
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    // Stop a fast double-click on Continue from opening two review
+    // modals (and, from there, letting a payment go through twice).
+    if (isReviewOpen || isFinalizing) return;
+
     const payeeRaw = els.payeeInput.value.trim();
     const amount = Number(els.amountInput.value) || 0;
     const note = els.noteInput.value.trim();
@@ -149,15 +164,38 @@
     return match ? match.payee_name : null;
   }
 
+  function findRecentDuplicate(upiId, amount) {
+    const now = Date.now();
+    return history.find((t) => {
+      if (t.direction !== "sent" || t.status !== "success") return false;
+      if ((t.upi_id || "").toLowerCase() !== upiId.toLowerCase()) return false;
+      if (Number(t.amount) !== Number(amount)) return false;
+      const ts = new Date(t.created_at).getTime();
+      if (!ts) return false;
+      return now - ts <= DUPLICATE_WINDOW_MS && now - ts >= 0;
+    });
+  }
+
   function showReview({ payeeName, upiId, amount, note, result }) {
     const fmt = window.TxUtils.formatINR;
     const reasonsHtml = result.reasons.map((r) => `<li>${escapeHtml(r)}</li>`).join("");
     const needsAck = result.level === "high";
 
+    const duplicate = findRecentDuplicate(upiId, amount);
+    const minsAgo = duplicate ? Math.max(1, Math.round((Date.now() - new Date(duplicate.created_at).getTime()) / 60000)) : null;
+    const duplicateHtml = duplicate ? `
+        <div style="display:flex;gap:10px;align-items:flex-start;background:#fff7e6;border:1px solid #ffd591;color:#874d00;padding:10px 12px;border-radius:8px;margin-bottom:14px;font-size:13px;">
+          <i class="fa-solid fa-triangle-exclamation" style="margin-top:2px;"></i>
+          <span>You already sent <strong>${fmt(amount)}</strong> to <strong>${escapeHtml(payeeName)}</strong> (${escapeHtml(upiId)}) about ${minsAgo} minute${minsAgo === 1 ? "" : "s"} ago. Make sure this isn't an accidental repeat payment.</span>
+        </div>` : "";
+
+    isReviewOpen = true;
+
     const modalRef = window.UIKit.modal({
       title: "Review & Confirm Payment",
       wide: true,
       bodyHtml: `
+        ${duplicateHtml}
         <div class="app-card" style="padding:14px;margin-bottom:14px;background:#f9fafc;border:1px solid #eef0f6;">
           <div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px;"><span>To</span><strong>${escapeHtml(payeeName)}</strong></div>
           <div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px;"><span>UPI ID</span><strong>${escapeHtml(upiId)}</strong></div>
@@ -181,7 +219,12 @@
           disabled: needsAck,
           closeOnClick: false,
           onClick: async ({ close }) => {
+            // A second click while the first payment is still being
+            // written to Supabase must be ignored - not queued.
+            if (isFinalizing) return;
+            disableModalActions(modalRef);
             await finalizePayment({ payeeName, upiId, amount, note, result, blocked: false });
+            isReviewOpen = false;
             close();
           },
         },
@@ -190,13 +233,26 @@
           variant: "ghost",
           closeOnClick: false,
           onClick: async ({ close }) => {
+            if (isFinalizing) return;
             if (needsAck) {
+              disableModalActions(modalRef);
               await finalizePayment({ payeeName, upiId, amount, note, result, blocked: true });
             }
+            isReviewOpen = false;
             close();
           },
         },
       ],
+    });
+
+    // If the user dismisses the review via the X button, backdrop
+    // click, or Escape (none of which run the actions above), the
+    // guard still needs to be released so Continue works again.
+    modalRef.el.closest(".uikit-overlay").addEventListener("click", (e) => {
+      if (e.target.closest(".uikit-modal-close") || e.target === e.currentTarget) isReviewOpen = false;
+    });
+    document.addEventListener("keydown", function releaseOnEsc(ev) {
+      if (ev.key === "Escape") { isReviewOpen = false; document.removeEventListener("keydown", releaseOnEsc); }
     });
 
     if (needsAck) {
@@ -206,13 +262,24 @@
     }
   }
 
+  function disableModalActions(modalRef) {
+    modalRef.el.querySelectorAll(".uikit-modal-actions .uikit-btn").forEach((btn) => { btn.disabled = true; });
+  }
+
   async function finalizePayment({ payeeName, upiId, amount, note, result, blocked }) {
+    // Last line of defense: even if two clicks somehow both reach
+    // here, only the first is allowed to write a transaction row.
+    if (isFinalizing) return;
+    isFinalizing = true;
+
     if (!window.supabaseClient || !currentUser) {
       window.UIKit.toast("Supabase isn't connected - can't save this transaction.", "error");
+      isFinalizing = false;
       return;
     }
     els.continueBtn.disabled = true;
     try {
+      const nowIso = new Date().toISOString();
       const { error } = await window.supabaseClient.from("transactions").insert({
         user_id: currentUser.id,
         payee_name: payeeName,
@@ -225,6 +292,19 @@
         note: note || null,
       });
       if (error) throw error;
+
+      // Reflect the new transaction locally right away so the
+      // duplicate check and the activity counter are accurate even
+      // before a fresh fetch from Supabase happens.
+      history.unshift({
+        payee_name: payeeName,
+        upi_id: upiId,
+        amount,
+        direction: "sent",
+        status: blocked ? "blocked" : "success",
+        created_at: nowIso,
+      });
+      renderPaymentActivity();
 
       if (blocked) {
         window.UIKit.toast("Payment cancelled. UPI Guardian logged this as a prevented risk.", "info");
@@ -239,7 +319,27 @@
       window.UIKit.toast("Couldn't save this transaction: " + (err.message || "unknown error"), "error");
     } finally {
       els.continueBtn.disabled = false;
+      isFinalizing = false;
     }
+  }
+
+  function renderPaymentActivity() {
+    if (!els.paymentActivityBox) return;
+    const now = Date.now();
+    const relevant = history.filter((t) => t.direction === "sent" && (t.status === "success" || t.status === "blocked"));
+    const lastHour = relevant.filter((t) => now - new Date(t.created_at).getTime() <= HOUR_MS).length;
+    const today = relevant.filter((t) => new Date(t.created_at).toDateString() === new Date(now).toDateString()).length;
+
+    if (!lastHour && !today) {
+      els.paymentActivityBox.innerHTML = "";
+      els.paymentActivityBox.style.display = "none";
+      return;
+    }
+    els.paymentActivityBox.style.display = "flex";
+    els.paymentActivityBox.innerHTML = `
+      <i class="fa-regular fa-clock"></i>
+      <span><strong>${lastHour}</strong> payment${lastHour === 1 ? "" : "s"} in the last hour &middot; <strong>${today}</strong> today</span>
+    `;
   }
 
   function escapeHtml(str) {
