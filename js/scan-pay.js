@@ -129,11 +129,15 @@
     const img = new Image();
     img.onload = () => {
       try {
+        if (!window.jsQR) {
+          window.UIKit.toast("The QR scanner library didn't load - check your internet connection and refresh the page.", "error");
+          return;
+        }
         canvasEl.width = img.width;
         canvasEl.height = img.height;
         canvasCtx.drawImage(img, 0, 0);
         const imageData = canvasCtx.getImageData(0, 0, canvasEl.width, canvasEl.height);
-        const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height) : null;
+        const code = window.jsQR(imageData.data, imageData.width, imageData.height);
         if (code && code.data) {
           handleDecodedText(code.data);
         } else {
