@@ -31,6 +31,15 @@
         if (window.UPIGuardianDemos) window.UPIGuardianDemos.runDemo(btn.dataset.demo);
       });
     });
+    // The "New Safety Features" cards use <a data-demo="..."> links instead
+    // of <button class="demo-btn">, so they need their own click wiring
+    // (and a preventDefault, since they carry a real href).
+    document.querySelectorAll("a[data-demo]").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (window.UPIGuardianDemos) window.UPIGuardianDemos.runDemo(link.dataset.demo);
+      });
+    });
   }
 
   function wireCheckReceiver() {
