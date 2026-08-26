@@ -22,6 +22,12 @@
   function wireDemoButtons() {
     document.querySelectorAll(".demo-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
+        // The QR demo needs a real camera/upload surface, not a canned
+        // popup - send it straight to the real Scan & Pay tool instead.
+        if (btn.dataset.demo === "fake-qr") {
+          window.location.href = "scan-pay.html?demo=fake-qr";
+          return;
+        }
         if (window.UPIGuardianDemos) window.UPIGuardianDemos.runDemo(btn.dataset.demo);
       });
     });
