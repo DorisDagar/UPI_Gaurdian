@@ -103,18 +103,48 @@
       payeeName: req.requester_name, upiId: req.requester_upi, amount: req.amount, note: req.note,
       history: [], isCollectRequest: true,
     });
+    const fmt = window.TxUtils.formatINR;
+
     const modalRef = window.UIKit.modal({
-      title: "Approve Payment Request",
+      title: "Fake Payment Request Detection",
+      wide: true,
       bodyHtml: `
-        <p style="margin-bottom:12px;">Approving this will send <strong>${window.TxUtils.formatINR(req.amount)}</strong> FROM your account TO <strong>${escapeHtml(req.requester_name)}</strong>.</p>
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;background:#fff1f0;border:1px solid #ffccc7;color:#a8071a;padding:12px 14px;border-radius:8px;margin-bottom:16px;font-size:14px;font-weight:600;">
+          <i class="fa-solid fa-triangle-exclamation" style="margin-top:2px;font-size:16px;"></i>
+          <span>You are about to <u>PAY</u> ${fmt(req.amount)} to ${escapeHtml(req.requester_name)} - you will NOT receive money from this.</span>
+        </div>
+
+        <div class="app-card" style="padding:14px;margin-bottom:14px;background:#f9fafc;border:1px solid #eef0f6;">
+          <strong style="display:block;font-size:13px;margin-bottom:8px;">What this request actually means</strong>
+          <p style="font-size:13.5px;color:#333;margin:0;line-height:1.5;">
+            <strong>${escapeHtml(req.requester_name)}</strong> (${escapeHtml(req.requester_upi)}) sent you a <strong>COLLECT request</strong>${req.note ? ` with the note "${escapeHtml(req.note)}"` : ""}.
+            A collect request looks like a normal notification, but it actually asks UPI to pull money <strong>out of your account</strong> - approving it authorizes a payment, it does not deposit anything into your account.
+          </p>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:150px;background:#f9fafc;border:1px solid #eef0f6;border-radius:8px;padding:10px 12px;">
+            <span style="font-size:11px;color:#8a8fa3;text-transform:uppercase;letter-spacing:.03em;">Direction</span>
+            <div style="font-weight:700;color:#a8071a;font-size:14px;margin-top:2px;"><i class="fa-solid fa-arrow-up"></i> You PAY (money leaves your account)</div>
+          </div>
+          <div style="flex:1;min-width:150px;background:#f9fafc;border:1px solid #eef0f6;border-radius:8px;padding:10px 12px;">
+            <span style="font-size:11px;color:#8a8fa3;text-transform:uppercase;letter-spacing:.03em;">Amount involved</span>
+            <div style="font-weight:700;font-size:14px;margin-top:2px;">${fmt(req.amount)}</div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
           <div class="risk-score-ring ${result.level}" style="--pct:${result.score}%"><span>${result.score}%</span></div>
           ${window.UIKit.riskBadge(result.level)}
+          ${req.is_suspicious ? `<span class="pill high"><i class="fa-solid fa-triangle-exclamation"></i> Flagged as suspicious</span>` : ""}
         </div>
+
+        <strong style="font-size:13px;">Risk level &amp; suspicious indicators</strong>
         <ul class="uikit-reason-list">${result.reasons.map((r) => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
+
         <div class="uikit-check-row">
           <input type="checkbox" id="reqAck">
-          <label for="reqAck" style="font-size:13px;color:#7a1f1f;">I understand this sends money out, and I want to approve it.</label>
+          <label for="reqAck" style="font-size:13px;color:#7a1f1f;">I understand this will PAY ${fmt(req.amount)} out of my account, and I want to approve it.</label>
         </div>
       `,
       actions: [
