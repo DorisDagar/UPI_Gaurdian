@@ -10,6 +10,7 @@
     bill: "fa-solid fa-file-invoice-dollar",
     food: "fa-solid fa-utensils",
     transfer: "fa-solid fa-paper-plane",
+    qr: "fa-solid fa-qrcode",
     other: "fa-solid fa-circle-notch",
   };
 
