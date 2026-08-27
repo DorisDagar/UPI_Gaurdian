@@ -266,6 +266,18 @@
           label: "Cancel", variant: "ghost", closeOnClick: false,
           onClick: async ({ close }) => { if (needsAck) await savePayment(parsed, result, amount, true); close(); },
         },
+        {
+          label: "Trusted Person Confirmation",
+          variant: "primary",
+          onClick: () => {
+            window.TrustedPerson.open({
+              payeeName: parsed.pn || parsed.pa, upiId: parsed.pa, amount, result,
+              skipDetection: true,
+              onProceed: async () => { await savePayment(parsed, result, amount, false); },
+              onCancel: async () => { if (needsAck) await savePayment(parsed, result, amount, true); },
+            });
+          },
+        },
       ],
     });
     if (needsAck) {
