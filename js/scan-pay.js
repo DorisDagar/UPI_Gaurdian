@@ -129,15 +129,11 @@
     const img = new Image();
     img.onload = () => {
       try {
-        if (!window.jsQR) {
-          window.UIKit.toast("The QR scanner library didn't load - check your internet connection and refresh the page.", "error");
-          return;
-        }
         canvasEl.width = img.width;
         canvasEl.height = img.height;
         canvasCtx.drawImage(img, 0, 0);
         const imageData = canvasCtx.getImageData(0, 0, canvasEl.width, canvasEl.height);
-        const code = window.jsQR(imageData.data, imageData.width, imageData.height);
+        const code = window.jsQR ? window.jsQR(imageData.data, imageData.width, imageData.height) : null;
         if (code && code.data) {
           handleDecodedText(code.data);
         } else {
@@ -255,6 +251,11 @@
         <p style="margin-bottom:10px;">Pay <strong>${window.TxUtils.formatINR(amount)}</strong> to <strong>${escapeHtml(parsed.pn || parsed.pa)}</strong>?</p>
         ${window.UIKit.riskBadge(result.level)}
         ${needsAck ? `<div class="uikit-check-row"><input type="checkbox" id="scanAck"><label for="scanAck" style="font-size:13px;color:#7a1f1f;">I understand the risk and want to proceed anyway.</label></div>` : ""}
+        <p style="margin-top:14px;">
+          <button type="button" id="askTrustedPersonBtnScan" style="border:none;background:none;padding:0;font-size:13px;font-weight:600;color:#7135d8;cursor:pointer;">
+            <i class="fa-solid fa-user-shield" style="margin-right:6px;"></i>Not sure? Ask a Trusted Person first
+          </button>
+        </p>
       `,
       actions: [
         {
@@ -266,24 +267,23 @@
           label: "Cancel", variant: "ghost", closeOnClick: false,
           onClick: async ({ close }) => { if (needsAck) await savePayment(parsed, result, amount, true); close(); },
         },
-        {
-          label: "Trusted Person Confirmation",
-          variant: "primary",
-          onClick: () => {
-            window.TrustedPerson.open({
-              payeeName: parsed.pn || parsed.pa, upiId: parsed.pa, amount, result,
-              skipDetection: true,
-              onProceed: async () => { await savePayment(parsed, result, amount, false); },
-              onCancel: async () => { if (needsAck) await savePayment(parsed, result, amount, true); },
-            });
-          },
-        },
       ],
     });
     if (needsAck) {
       const ack = modalRef.body.querySelector("#scanAck");
       const confirmBtn = modalRef.el.querySelectorAll(".uikit-modal-actions .uikit-btn")[0];
       ack.addEventListener("change", () => { confirmBtn.disabled = !ack.checked; });
+    }
+    const askBtnScan = modalRef.body.querySelector("#askTrustedPersonBtnScan");
+    if (askBtnScan) {
+      askBtnScan.addEventListener("click", () => {
+        modalRef.close();
+        window.TrustedPerson.open({
+          payeeName: parsed.pn || parsed.pa, upiId: parsed.pa, amount, note: parsed.tn, result, skipDetection: true,
+          onProceed: () => savePayment(parsed, result, amount, false),
+          onCancel: () => savePayment(parsed, result, amount, true),
+        });
+      });
     }
   }
 
@@ -296,7 +296,7 @@
         upi_id: parsed.pa,
         amount,
         direction: "sent",
-        category: "other",
+        category: "qr",
         risk_level: result.level,
         status: blocked ? "blocked" : "success",
         note: parsed.tn || "Paid via Scan & Pay",
