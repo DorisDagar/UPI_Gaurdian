@@ -45,16 +45,7 @@
       });
     },
     "fake-request": function () {
-      const result = window.RiskEngine.assessTransactionRisk({
-        payeeName: "\"KYC Update - SBI\"", upiId: "kyc-update@fraud", amount: 1, note: "Pay ₹1 to verify KYC, urgent",
-        history: [], isCollectRequest: true,
-      });
-      showResult({
-        title: "Demo: Fake Payment Request",
-        intro: "A \"collect\" request claiming to be a ₹1 KYC verification. Collect requests pull money OUT of your account - they never send you anything, no matter what the note says:",
-        result,
-        payee: "KYC Update - SBI", amount: 1,
-      });
+      runFakeRequestDemo();
     },
     "trusted-person": function () {
       runTrustedPersonDemo();
@@ -83,6 +74,115 @@
       });
     },
   };
+
+  /**
+   * Demo: Fake Payment Request.
+   * Simulates the real Payment Requests flow end-to-end (instead of
+   * redirecting anywhere): an incoming collect request with
+   * Approve/Decline, and - only on Approve - the full "you're about to
+   * PAY, not receive" breakdown from the real RiskEngine.
+   */
+  function runFakeRequestDemo() {
+    const fmt = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+    const req = {
+      requester_name: "\"KYC Update - SBI\"",
+      requester_upi: "kyc-update@fraud",
+      amount: 1,
+      note: "Pay ₹1 to verify KYC, urgent",
+    };
+    const result = window.RiskEngine.assessTransactionRisk({
+      payeeName: req.requester_name, upiId: req.requester_upi, amount: req.amount, note: req.note,
+      history: [], isCollectRequest: true,
+    });
+    const declineToast = () => window.UIKit.toast("Good call - declining a collect request keeps your money safe.", "success");
+
+    window.UIKit.modal({
+      title: "New Payment Request Received",
+      wide: true,
+      bodyHtml: `
+        <p style="margin-bottom:12px;color:#555;">This simulates a request landing on your Payment Requests page:</p>
+        <div class="app-card" style="padding:14px;background:#f9fafc;border:1px solid #eef0f6;">
+          <div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px;"><span>From</span><strong>${req.requester_name}</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px;"><span>UPI ID</span><strong>${req.requester_upi}</strong></div>
+          <div style="display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:6px;"><span>Amount</span><strong>${fmt(req.amount)}</strong></div>
+          <div style="font-size:13px;color:#666;margin-top:6px;">"${req.note}"</div>
+        </div>
+      `,
+      actions: [
+        { label: "Approve", variant: "danger", onClick: () => showFakeRequestApproval(req) },
+        { label: "Cancel", variant: "ghost", onClick: declineToast },
+        { label: "Trusted Person Confirmation", variant: "primary", onClick: () => {
+            if (!window.TrustedPerson) return;
+            window.TrustedPerson.open({
+              payeeName: req.requester_name,
+              upiId: req.requester_upi,
+              amount: req.amount,
+              result,
+              onProceed: () => showFakeRequestApproval(req),
+              onCancel: declineToast,
+            });
+          } },
+      ],
+    });
+  }
+
+  function showFakeRequestApproval(req) {
+    const fmt = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+    const result = window.RiskEngine.assessTransactionRisk({
+      payeeName: req.requester_name, upiId: req.requester_upi, amount: req.amount, note: req.note,
+      history: [], isCollectRequest: true,
+    });
+
+    const modalRef = window.UIKit.modal({
+      title: "Fake Payment Request Detection",
+      wide: true,
+      bodyHtml: `
+        <div style="display:flex;gap:10px;align-items:flex-start;background:#fff1f0;border:1px solid #ffccc7;color:#a8071a;padding:12px 14px;border-radius:8px;margin-bottom:16px;font-size:14px;font-weight:600;">
+          <i class="fa-solid fa-triangle-exclamation" style="margin-top:2px;font-size:16px;"></i>
+          <span>You are about to <u>PAY</u> ${fmt(req.amount)} to ${req.requester_name} - you will NOT receive money from this.</span>
+        </div>
+        <div class="app-card" style="padding:14px;margin-bottom:14px;background:#f9fafc;border:1px solid #eef0f6;">
+          <strong style="display:block;font-size:13px;margin-bottom:8px;">What this request actually means</strong>
+          <p style="font-size:13.5px;color:#333;margin:0;line-height:1.5;">
+            <strong>${req.requester_name}</strong> (${req.requester_upi}) sent a <strong>COLLECT request</strong> with the note "${req.note}".
+            A collect request looks like a normal notification, but it actually asks UPI to pull money <strong>out of your account</strong> - approving it authorizes a payment, it does not deposit anything into your account.
+          </p>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:150px;background:#f9fafc;border:1px solid #eef0f6;border-radius:8px;padding:10px 12px;">
+            <span style="font-size:11px;color:#8a8fa3;text-transform:uppercase;letter-spacing:.03em;">Direction</span>
+            <div style="font-weight:700;color:#a8071a;font-size:14px;margin-top:2px;"><i class="fa-solid fa-arrow-up"></i> You PAY (money leaves your account)</div>
+          </div>
+          <div style="flex:1;min-width:150px;background:#f9fafc;border:1px solid #eef0f6;border-radius:8px;padding:10px 12px;">
+            <span style="font-size:11px;color:#8a8fa3;text-transform:uppercase;letter-spacing:.03em;">Amount involved</span>
+            <div style="font-weight:700;font-size:14px;margin-top:2px;">${fmt(req.amount)}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+          <div class="risk-score-ring ${result.level}" style="--pct:${result.score}%"><span>${result.score}%</span></div>
+          ${window.UIKit.riskBadge(result.level)}
+          <span class="pill high"><i class="fa-solid fa-triangle-exclamation"></i> Flagged as suspicious</span>
+        </div>
+        <strong style="font-size:13px;">Risk level &amp; suspicious indicators</strong>
+        <ul class="uikit-reason-list">${result.reasons.map((r) => `<li>${r}</li>`).join("")}</ul>
+        <div class="uikit-check-row">
+          <input type="checkbox" id="demoReqAck">
+          <label for="demoReqAck" style="font-size:13px;color:#7a1f1f;">I understand this will PAY ${fmt(req.amount)} out of my account, and I want to approve it.</label>
+        </div>
+      `,
+      actions: [
+        { label: "Approve & Pay", variant: "danger", disabled: true, closeOnClick: false,
+          onClick: ({ close }) => {
+            window.UIKit.toast("This was a demo - no real transaction was created. In real life, that first ₹1 is just the scammer's foot in the door.", "info");
+            close();
+          } },
+        { label: "Cancel", variant: "ghost" },
+      ],
+    });
+    const ack = modalRef.body.querySelector("#demoReqAck");
+    const confirmBtn = modalRef.el.querySelectorAll(".uikit-modal-actions .uikit-btn")[0];
+    ack.addEventListener("change", () => { confirmBtn.disabled = !ack.checked; });
+  }
 
   function showResult({ title, intro, result, payee, amount }) {
     const fmt = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
