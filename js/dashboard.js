@@ -1,33 +1,25 @@
-async function initDashboard() {
-    const user = (await supabase.auth.getUser()).data.user;
-    if (!user) return;
-
-    // Fetch transactions
+async function calculateLiveSafetyScore() {
     const { data: txs } = await supabase
         .from('transactions')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('risk_score')
+        .limit(20); // Look at last 20 payments
 
-    // 1. Update Safety Score (Dynamic Average)
-    const avgRisk = txs.length > 0 
-        ? txs.reduce((sum, t) => sum + t.risk_score, 0) / txs.length 
-        : 0;
-    const safetyScore = Math.max(10, 100 - avgRisk);
-    document.getElementById('statSafetyScore').innerHTML = `${Math.round(safetyScore)} <small>/100</small>`;
+    if (!txs || txs.length === 0) return 100; // New users start at 100
 
-    // 2. Update Transactions Count
-    document.getElementById('statAnalyzed').innerText = txs.length;
-
-    // 3. Update Money Saved (Flagged high risk transactions)
-    const saved = txs
-        .filter(t => t.risk_level === 'High')
-        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
-    document.getElementById('statMoneySaved').innerText = `₹${saved.toLocaleString()}`;
+    const totalRisk = txs.reduce((sum, t) => sum + t.risk_score, 0);
+    const avgRisk = totalRisk / txs.length;
+    
+    // Safety Score = 100 - average risk
+    const dynamicScore = Math.round(100 - avgRisk);
+    
+    const scoreElement = document.getElementById('statSafetyScore');
+    if (scoreElement) {
+        scoreElement.innerHTML = `${dynamicScore} <small>/100</small>`;
+        
+        // Change color based on score
+        const label = document.getElementById('statSafetyLabel');
+        if (dynamicScore > 80) label.innerText = "Very Safe";
+        else if (dynamicScore > 50) label.innerText = "Monitor Activity";
+        else label.innerText = "High Risk Account";
+    }
 }
-
-// Subscribe to real-time updates
-supabase.channel('dashboard-updates')
-  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions' }, initDashboard)
-  .subscribe();
-
-document.addEventListener('DOMContentLoaded', initDashboard);
