@@ -177,6 +177,21 @@
             close();
           } },
         { label: "Cancel", variant: "ghost" },
+        {
+          label: "Trusted Person Confirmation",
+          variant: "primary",
+          onClick: () => {
+            if (!window.TrustedPerson) return;
+            window.TrustedPerson.open({
+              payeeName: req.requester_name, upiId: req.requester_upi, amount: req.amount, result,
+              skipDetection: true,
+              onProceed: () => {
+                window.UIKit.toast("This was a demo - no real transaction was created. In real life, that first ₹1 is just the scammer's foot in the door.", "info");
+              },
+              onCancel: () => {},
+            });
+          },
+        },
       ],
     });
     const ack = modalRef.body.querySelector("#demoReqAck");
