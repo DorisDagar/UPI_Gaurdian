@@ -92,18 +92,80 @@
     return `<p style="font-size:12px;color:#8a93a6;margin-top:8px;">Not enough data yet.</p>`;
   }
 
+  const NOTE_TRIGGER_WORDS = [
+    "urgent", "gift card", "lottery", "prize", "refund", "kyc", "blocked",
+    "verify now", "otp", "winner", "claim", "reward", "loan approved",
+    "double your money", "investment scheme",
+  ];
+
+  function noteTriggerWord(note) {
+    const t = String(note || "").toLowerCase();
+    return NOTE_TRIGGER_WORDS.find((w) => t.includes(w));
+  }
+
+  /**
+   * Classify each transaction/message into the same signal categories
+   * described on the Help page (Suspicious message received, Unknown
+   * link/QR detected, New receiver identified, Urgent payment request,
+   * High-risk payment alert) so the timeline reads as a connected story
+   * instead of a flat "Paid X to Y" feed. Falls back to a plain
+   * description when nothing specific stands out.
+   */
+  function classifyTransaction(t, isFirstTimeReceiver) {
+    const paidOrReceived = t.direction === "sent" ? "Paid" : "Received";
+    const verb = t.status === "blocked" ? "Blocked" : paidOrReceived;
+    const base = `${verb} ${window.TxUtils.formatINR(t.amount)} ${t.direction === "sent" ? "to" : "from"} ${t.payee_name}`;
+    const trigger = noteTriggerWord(t.note);
+
+    if (t.risk_level === "high") {
+      return { icon: "fa-shield-halved", title: `High-risk payment alert - ${base}` };
+    }
+    if (trigger) {
+      return { icon: "fa-triangle-exclamation", title: `Urgent payment request - ${base}` };
+    }
+    if (t.category === "qr" || /scan\s*&?\s*pay/i.test(t.note || "")) {
+      return { icon: "fa-qrcode", title: `Unknown link/QR detected - ${base}` };
+    }
+    if (t.direction === "sent" && isFirstTimeReceiver) {
+      return { icon: "fa-user", title: `New receiver identified - ${base}` };
+    }
+    return { icon: "fa-paper-plane", title: base };
+  }
+
+  function classifyMessage(m) {
+    if (m.risk_level === "medium" || m.risk_level === "high") {
+      return { icon: "fa-comment-dots", title: `Suspicious message received - ${m.risk_level} risk (${m.risk_score}%)` };
+    }
+    return { icon: "fa-comment-dots", title: `Analyzed a message - ${m.risk_level} risk (${m.risk_score}%)` };
+  }
+
   function renderTimeline(transactions, messages) {
+    // Work out which sent transactions are to a brand-new UPI ID, based
+    // on their real chronological order (earliest first).
+    const byTimeAsc = [...transactions].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    const seenUpi = new Set();
+    const firstTimeMap = new Map(); // transaction id -> boolean
+    byTimeAsc.forEach((t) => {
+      if (t.direction === "sent") {
+        const key = (t.upi_id || "").toLowerCase();
+        firstTimeMap.set(t.id, key && !seenUpi.has(key));
+        if (key) seenUpi.add(key);
+      }
+    });
+
     const items = [
-      ...transactions.map((t) => ({
-        type: "transaction", when: t.created_at, risk: t.risk_level,
-        title: `${t.status === "blocked" ? "Blocked" : t.direction === "sent" ? "Paid" : "Received"} ${window.TxUtils.formatINR(t.amount)} ${t.direction === "sent" ? "to" : "from"} ${t.payee_name}`,
-        detail: t.upi_id + (t.note ? " · " + t.note : ""),
-      })),
-      ...messages.map((m) => ({
-        type: "message", when: m.created_at, risk: m.risk_level,
-        title: `Analyzed a message - ${m.risk_level} risk (${m.risk_score}%)`,
-        detail: m.excerpt,
-      })),
+      ...transactions.map((t) => {
+        const c = classifyTransaction(t, firstTimeMap.get(t.id));
+        return {
+          type: "transaction", when: t.created_at, risk: t.risk_level,
+          title: c.title, icon: c.icon,
+          detail: t.upi_id + (t.note ? " · " + t.note : ""),
+        };
+      }),
+      ...messages.map((m) => {
+        const c = classifyMessage(m);
+        return { type: "message", when: m.created_at, risk: m.risk_level, title: c.title, icon: c.icon, detail: m.excerpt };
+      }),
     ].sort((a, b) => new Date(b.when) - new Date(a.when)).slice(0, 25);
 
     const list = document.getElementById("timelineList");
@@ -114,7 +176,7 @@
     list.innerHTML = `<div class="timeline">` + items.map((it) => `
       <div class="timeline-item ${it.risk || "low"}">
         <div class="t-head">
-          <i class="fa-solid ${it.type === "message" ? "fa-comment-dots" : "fa-paper-plane"}" style="color:#8a93a6;"></i>
+          <i class="fa-solid ${it.icon}" style="color:#8a93a6;"></i>
           <strong>${escapeHtml(it.title)}</strong>
           <span class="pill ${it.risk || "low"}">${(it.risk || "low")}</span>
           <span class="t-when">${window.TxUtils.formatDate(it.when)}</span>
