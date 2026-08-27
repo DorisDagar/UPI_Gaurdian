@@ -56,6 +56,31 @@
       ? sentHistory.reduce((s, t) => s + Number(t.amount || 0), 0) / sentHistory.length
       : 0;
 
+    // Informational context: how this amount compares to what the user
+    // has actually paid before, both to this specific receiver and
+    // overall - not just a flat "looks typical" line.
+    const fmtAmt = (n) => "₹" + Math.round(n).toLocaleString("en-IN");
+    const payeeHistory = cleanUpi ? sentHistory.filter((t) => String(t.upi_id || "").trim().toLowerCase() === cleanUpi) : [];
+    if (payeeHistory.length) {
+      const amounts = payeeHistory.map((t) => Number(t.amount) || 0);
+      const min = Math.min(...amounts);
+      const max = Math.max(...amounts);
+      const payeeAvg = amounts.reduce((s, a) => s + a, 0) / amounts.length;
+      const times = payeeHistory.length;
+      const timesLabel = `${times} time${times === 1 ? "" : "s"}`;
+      if (min === max) {
+        reasons.push(`You've paid this UPI ID ${timesLabel} before, always around ${fmtAmt(min)}. This payment of ${fmtAmt(amt)} matches that pattern.`);
+      } else {
+        const fits = amt >= min && amt <= max;
+        reasons.push(`You've paid this UPI ID ${timesLabel} before, usually between ${fmtAmt(min)} and ${fmtAmt(max)} (average ${fmtAmt(payeeAvg)}). This payment ${fits ? "falls within" : "is outside"} that usual range.`);
+      }
+    } else if (sentHistory.length) {
+      const amounts = sentHistory.map((t) => Number(t.amount) || 0);
+      const min = Math.min(...amounts);
+      const max = Math.max(...amounts);
+      reasons.push(`Across all your past payments, amounts have typically ranged from ${fmtAmt(min)} to ${fmtAmt(max)}.`);
+    }
+
     if (amt >= LARGE_AMOUNT_ABS) {
       score += 25;
       reasons.push(`₹${amt.toLocaleString("en-IN")} is a large transfer - double-check the amount before paying.`);
@@ -90,7 +115,7 @@
     const level = score >= 60 ? "high" : score >= 30 ? "medium" : "low";
 
     if (!reasons.length) {
-      reasons.push("Receiver matches your past payment history and the amount looks typical for you.");
+      reasons.push("Nothing unusual found for this payment - receiver and amount both look consistent with your history.");
     }
 
     return { score, level, reasons, isNewReceiver };
