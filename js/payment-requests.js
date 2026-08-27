@@ -151,6 +151,18 @@
         { label: "Approve & Pay", variant: "danger", disabled: true, closeOnClick: false,
           onClick: async ({ close }) => { await approve(req, result); close(); } },
         { label: "Cancel", variant: "ghost" },
+        {
+          label: "Trusted Person Confirmation",
+          variant: "primary",
+          onClick: () => {
+            window.TrustedPerson.open({
+              payeeName: req.requester_name, upiId: req.requester_upi, amount: req.amount, result,
+              skipDetection: true,
+              onProceed: async () => { await approve(req, result); },
+              onCancel: () => {},
+            });
+          },
+        },
       ],
     });
     const ack = modalRef.body.querySelector("#reqAck");
