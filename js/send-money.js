@@ -242,6 +242,28 @@
             close();
           },
         },
+        {
+          label: "Trusted Person Confirmation",
+          variant: "primary",
+          onClick: () => {
+            if (isFinalizing) return;
+            // The review modal already showed the full risk detail, so
+            // jump the trusted-person flow straight to picking a contact.
+            isReviewOpen = false;
+            window.TrustedPerson.open({
+              payeeName, upiId, amount, result,
+              skipDetection: true,
+              onProceed: async () => {
+                await finalizePayment({ payeeName, upiId, amount, note, result, blocked: false });
+              },
+              onCancel: async () => {
+                if (needsAck) {
+                  await finalizePayment({ payeeName, upiId, amount, note, result, blocked: true });
+                }
+              },
+            });
+          },
+        },
       ],
     });
 
