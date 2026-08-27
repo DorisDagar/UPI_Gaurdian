@@ -77,10 +77,39 @@
     panel.addEventListener("click", (e) => e.stopPropagation());
   }
 
+  function notifClearKey(user) {
+    return `upi_guardian_notifs_cleared_${user.id}`;
+  }
+
+  function getClearedAt(user) {
+    try { return localStorage.getItem(notifClearKey(user)) || null; } catch (_) { return null; }
+  }
+
+  function setClearedAt(user, iso) {
+    try { localStorage.setItem(notifClearKey(user), iso); } catch (_) { /* localStorage unavailable - clear-all just won't persist */ }
+  }
+
+  function ensureClearAllButton(header) {
+    let btn = header.querySelector("#notifClearAll");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.id = "notifClearAll";
+      btn.className = "notif-clear-all";
+      btn.textContent = "Clear all";
+      header.appendChild(btn);
+    }
+    return btn;
+  }
+
   async function loadNotifications(user) {
     const badge = document.getElementById("notifBadge");
     const list = document.getElementById("notifList");
+    const header = document.querySelector("#notifDropdown .notif-dropdown-header");
     if (!window.supabaseClient || !list) return;
+
+    const clearBtn = header ? ensureClearAllButton(header) : null;
+
     try {
       const { data, error } = await window.supabaseClient
         .from("transactions")
@@ -89,26 +118,44 @@
         .order("created_at", { ascending: false })
         .limit(5);
       if (error) throw error;
-      const rows = data || [];
-      if (badge) {
-        badge.textContent = rows.length;
-        badge.hidden = rows.length === 0;
+
+      const clearedAt = getClearedAt(user);
+      const rows = (data || []).filter((tx) => !clearedAt || new Date(tx.created_at).getTime() > new Date(clearedAt).getTime());
+
+      renderNotifRows(rows, badge, list);
+
+      if (clearBtn) {
+        clearBtn.hidden = rows.length === 0;
+        clearBtn.onclick = (e) => {
+          e.stopPropagation();
+          setClearedAt(user, new Date().toISOString());
+          renderNotifRows([], badge, list);
+          clearBtn.hidden = true;
+        };
       }
-      list.innerHTML = rows.length
-        ? rows.map((tx) => {
-            const fmt = window.TxUtils ? window.TxUtils.formatINR : (n) => "₹" + n;
-            const when = window.TxUtils ? window.TxUtils.formatDate(tx.created_at) : "";
-            return `<div class="notif-item ${tx.risk_level}">
-              <i class="fa-solid ${tx.risk_level === "high" ? "fa-triangle-exclamation" : "fa-circle-exclamation"}"></i>
-              <div><strong>${tx.risk_level === "high" ? "High risk" : "Flagged"} payment to ${escapeHtml(tx.payee_name)}</strong>
-              <small>${fmt(tx.amount)} &middot; ${when}</small></div>
-            </div>`;
-          }).join("")
-        : `<div class="notif-empty">You're all caught up - no risky activity flagged.</div>`;
     } catch (err) {
       console.warn("[UPI Guardian] Couldn't load notifications:", err.message || err);
       list.innerHTML = `<div class="notif-empty">Couldn't load notifications right now.</div>`;
+      if (clearBtn) clearBtn.hidden = true;
     }
+  }
+
+  function renderNotifRows(rows, badge, list) {
+    if (badge) {
+      badge.textContent = rows.length;
+      badge.hidden = rows.length === 0;
+    }
+    list.innerHTML = rows.length
+      ? rows.map((tx) => {
+          const fmt = window.TxUtils ? window.TxUtils.formatINR : (n) => "₹" + n;
+          const when = window.TxUtils ? window.TxUtils.formatDate(tx.created_at) : "";
+          return `<div class="notif-item ${tx.risk_level}">
+            <i class="fa-solid ${tx.risk_level === "high" ? "fa-triangle-exclamation" : "fa-circle-exclamation"}"></i>
+            <div><strong>${tx.risk_level === "high" ? "High risk" : "Flagged"} payment to ${escapeHtml(tx.payee_name)}</strong>
+            <small>${fmt(tx.amount)} &middot; ${when}</small></div>
+          </div>`;
+        }).join("")
+      : `<div class="notif-empty">You're all caught up - no risky activity flagged.</div>`;
   }
 
   function escapeHtml(str) {
